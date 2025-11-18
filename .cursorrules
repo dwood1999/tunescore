@@ -1,0 +1,67 @@
+# TuneScore: Bloomberg Terminal for Music Industry
+
+## Development Workflow
+- **After frontend changes**: ALWAYS rebuild (`cd frontend && npm run build`) and restart the preview server (`pkill -f "vite preview.*5128" && npm run preview -- --host 0.0.0.0 --port 5128 &`) so changes are visible on the live site
+- Backend changes: Restart with `sudo systemctl restart tunescore-backend` or `cd backend && uvicorn app.main:app --reload`
+
+## General
+- Python 3.12, FastAPI, async SQLAlchemy 2.0, Pydantic v2
+- SvelteKit v2, Svelte 5 runes, TypeScript, Tailwind
+- Mirror Quilty.app patterns: config, middleware, logging, auth, API structure
+- No secrets in repo; use .env files
+- Structured logging (structlog) with request IDs; guard PII in logs
+- Lint: Ruff; Format: Black; Types: mypy (strict-ish per Quilty pyproject.toml)
+
+## Database
+- PostgreSQL only; extensions: pgvector, pg_trgm, (optional postgis)
+- JSONB for AI outputs (zero-transform principle)
+- Alembic migrations required; descriptive filenames
+- Use asyncpg driver; connection pooling per Quilty config
+
+## Music Domain
+- Audio: librosa, soundfile, pydub; system dep: FFmpeg
+- Store raw audio features in JSONB (sonic_genome)
+- Lyrics: VADER for sentiment arc; embeddings via sentence-transformers (MiniLM-L6-v2) → pgvector
+- Integrations: Spotify (OAuth via spotipy), YouTube (API key), cache with requests-cache
+- Build adapter interfaces for future paid data sources (Chartmetric, Luminate)
+
+## API Design
+- Prefix: /api/v1
+- OpenAPI served at /api/v1/openapi.json for frontend typegen
+- Errors: {error: {code, message}} with proper HTTP status
+- Auth: JWT (mirror Quilty auth patterns)
+
+## Frontend
+- Generate types: npm run schema:pull && npm run schema:gen (openapi-zod-client)
+- Never hand-roll DTOs; always use generated types
+- Charts: Chart.js for line/bar/radar; D3 for custom waveforms
+- i18n: svelte-i18n for multi-language support
+- **After making frontend changes, ALWAYS rebuild and restart**: `cd frontend && npm run build && pkill -f "vite preview.*5128" && npm run preview -- --host 0.0.0.0 --port 5128 &` (or use the start_frontend.sh script)
+
+## AI & ML
+- Optional API keys (Anthropic, OpenAI) for thematic extraction and creative generation
+- Local-first where feasible (VADER, sentence-transformers, librosa)
+- Log all AI prompts to logs/api_prompts.log (guard PII)
+- Cost tracking per Quilty governor patterns (if using paid APIs)
+
+## Ops (No Docker)
+- Systemd services: backend (uvicorn), jobs (APScheduler), frontend (optional)
+- Systemd timers for nightly data snapshots
+- Reverse proxy: Nginx or Caddy (mirror Quilty timeout configs)
+- Scripts: start_backend.sh, start_frontend.sh, migrate.sh, backup_db.sh
+- Backups: nightly pg_dump with rotation (7/30 days)
+- Logs: /home/dwood/tunescore/logs/ with logrotate
+
+## Three-Tier User Model
+- Creator (artists): Sonic/Lyrical Genome, RIYL, Hook Lab
+- Developer (A&R): Talent Discovery, Breakout Score, Collaboration Lab
+- Monetizer (execs): Catalog Valuation, Global Resonance, Sync Licensing
+
+## Core Principles
+- Write clean, simple, senior-level code.
+- No legacy support needed (pre-launch).
+- Avoid deprecated patterns or workarounds.
+- Use modern best practices only.
+- Delete unused code immediately.
+- Take advantage of features in our Tech Stack
+

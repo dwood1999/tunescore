@@ -1,0 +1,27 @@
+[Unit]
+Description=TuneScore Industry Pulse Data Scraper
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=dwood
+Group=dwood
+WorkingDirectory=/home/dwood/tunescore/backend
+Environment="PATH=/home/dwood/tunescore/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/dwood/tunescore/backend/venv/bin/python scripts/run_industry_scraper.py
+StandardOutput=append:/home/dwood/tunescore/logs/industry_scraper.log
+StandardError=append:/home/dwood/tunescore/logs/industry_scraper_error.log
+SyslogIdentifier=tunescore-industry-scraper
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits
+TimeoutStartSec=600
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
+

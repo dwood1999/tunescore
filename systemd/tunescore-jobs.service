@@ -1,0 +1,23 @@
+[Unit]
+Description=TuneScore Background Jobs (APScheduler)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=dwood
+Group=dwood
+WorkingDirectory=/home/dwood/tunescore/backend
+Environment="PATH=/home/dwood/tunescore/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/home/dwood/tunescore/.env
+ExecStart=/home/dwood/tunescore/backend/scripts/start_jobs.sh
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=append:/home/dwood/tunescore/logs/jobs.log
+StandardError=append:/home/dwood/tunescore/logs/jobs.error.log
+
+[Install]
+WantedBy=multi-user.target
+

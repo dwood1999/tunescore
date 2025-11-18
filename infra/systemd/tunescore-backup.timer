@@ -1,0 +1,13 @@
+[Unit]
+Description=TuneScore Database Backup Timer
+Requires=tunescore-backup.service
+
+[Timer]
+# Run daily at 2:00 AM
+OnCalendar=daily
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+

@@ -1,0 +1,139 @@
+/* Self-hosted fonts - eliminates 200-400ms external load */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/fraunces/600.css';
+@import '@fontsource/fraunces/700.css';
+@import '@fontsource/fraunces/900.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Screen reader only - hides visually but keeps accessible to assistive tech */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+@layer base {
+  :root {
+    /* TuneScore brand palette mapped to shadcn-svelte tokens */
+    --background: 222 13% 87%;
+    /* gainsboro #DEDEDE */
+    --foreground: 177 100% 13%;
+    /* richBlack #00423F */
+
+    --card: 0 0% 100%;
+    /* white */
+    --card-foreground: 177 100% 13%;
+    /* richBlack */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 177 100% 13%;
+
+    --primary: 50 25% 71%;
+    /* sage #D1CA98 */
+    --primary-foreground: 177 100% 13%;
+    /* richBlack on sage */
+
+    --secondary: 35 100% 15%;
+    /* deepBronze #4E3200 */
+    --secondary-foreground: 0 0% 100%;
+    /* white on bronze */
+
+    --muted: 0 0% 91%;
+    /* light gray */
+    --muted-foreground: 177 20% 30%;
+    /* muted richBlack */
+
+    --accent: 35 100% 15%;
+    /* deepBronze for accents */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 13% 87%;
+    /* gainsboro */
+    --input: 222 13% 87%;
+    --ring: 50 25% 71%;
+    /* sage for focus rings */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode using richBlack variants */
+    --background: 177 100% 9%;
+    /* dark richBlack #0F2E2A */
+    --foreground: 0 0% 100%;
+    /* white */
+
+    --card: 177 100% 9%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 177 100% 9%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 50 25% 71%;
+    /* sage */
+    --primary-foreground: 177 100% 6%;
+    /* very dark richBlack */
+
+    --secondary: 35 100% 15%;
+    /* deepBronze */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 177 50% 12%;
+    /* muted dark richBlack */
+    --muted-foreground: 177 10% 80%;
+    /* light muted */
+
+    --accent: 35 100% 15%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 177 40% 15%;
+    /* dark border */
+    --input: 177 40% 15%;
+    --ring: 50 25% 71%;
+    /* sage */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Fraunces', Georgia, serif;
+  }
+}
+

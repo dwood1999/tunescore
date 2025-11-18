@@ -1,0 +1,160 @@
+"""add_industry_snapshot_tables
+
+Revision ID: 46c90ae0ff06
+Revises: 1f4811637e38
+Create Date: 2025-11-02 13:30:16.683931
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers, used by Alembic.
+revision: str = '46c90ae0ff06'
+down_revision: Union[str, Sequence[str], None] = '1f4811637e38'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # Create industry_news table
+    op.create_table(
+        'industry_news',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('title', sa.String(length=500), nullable=False),
+        sa.Column('source', sa.String(length=100), nullable=False),
+        sa.Column('url', sa.String(length=1000), nullable=False),
+        sa.Column('summary', sa.Text(), nullable=True),
+        sa.Column('category', sa.String(length=50), nullable=True),
+        sa.Column('impact_score', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column('published_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('url')
+    )
+    op.create_index('idx_category_published', 'industry_news', ['category', 'published_at'], unique=False)
+    op.create_index('idx_source_published', 'industry_news', ['source', 'published_at'], unique=False)
+    op.create_index(op.f('ix_industry_news_id'), 'industry_news', ['id'], unique=False)
+
+    # Create chart_snapshots table
+    op.create_table(
+        'chart_snapshots',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('platform', sa.String(length=50), nullable=False),
+        sa.Column('chart_type', sa.String(length=100), nullable=False),
+        sa.Column('position', sa.Integer(), nullable=False),
+        sa.Column('track_title', sa.String(length=500), nullable=False),
+        sa.Column('artist', sa.String(length=500), nullable=False),
+        sa.Column('streams', sa.BigInteger(), nullable=True),
+        sa.Column('movement', sa.Integer(), nullable=True),
+        sa.Column('spotify_id', sa.String(length=100), nullable=True),
+        sa.Column('snapshot_date', sa.Date(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('platform', 'chart_type', 'position', 'snapshot_date')
+    )
+    op.create_index('idx_platform_date', 'chart_snapshots', ['platform', 'snapshot_date'], unique=False)
+    op.create_index(op.f('ix_chart_snapshots_id'), 'chart_snapshots', ['id'], unique=False)
+
+    # Create new_releases table
+    op.create_table(
+        'new_releases',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('artist', sa.String(length=500), nullable=False),
+        sa.Column('album_title', sa.String(length=500), nullable=False),
+        sa.Column('release_date', sa.Date(), nullable=False),
+        sa.Column('label', sa.String(length=200), nullable=True),
+        sa.Column('genre', sa.String(length=100), nullable=True),
+        sa.Column('spotify_id', sa.String(length=100), nullable=True),
+        sa.Column('apple_music_id', sa.String(length=100), nullable=True),
+        sa.Column('notable', sa.Boolean(), nullable=True),
+        sa.Column('first_day_streams', sa.BigInteger(), nullable=True),
+        sa.Column('extra_data', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('spotify_id')
+    )
+    op.create_index('idx_notable', 'new_releases', ['notable'], unique=False)
+    op.create_index('idx_release_date', 'new_releases', ['release_date'], unique=False, postgresql_ops={'release_date': 'DESC'})
+    op.create_index(op.f('ix_new_releases_id'), 'new_releases', ['id'], unique=False)
+
+    # Create gear_releases table
+    op.create_table(
+        'gear_releases',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('product_name', sa.String(length=500), nullable=False),
+        sa.Column('manufacturer', sa.String(length=200), nullable=False),
+        sa.Column('category', sa.String(length=100), nullable=False),
+        sa.Column('subcategory', sa.String(length=100), nullable=True),
+        sa.Column('price', sa.Numeric(precision=10, scale=2), nullable=True),
+        sa.Column('price_tier', sa.String(length=50), nullable=True),
+        sa.Column('release_date', sa.Date(), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('url', sa.String(length=1000), nullable=True),
+        sa.Column('image_url', sa.String(length=1000), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_gear_releases_id'), 'gear_releases', ['id'], unique=False)
+
+    # Create daily_digest table
+    op.create_table(
+        'daily_digest',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('digest_date', sa.Date(), nullable=False),
+        sa.Column('summary_text', sa.Text(), nullable=False),
+        sa.Column('key_highlights', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column('cost', sa.Float(), nullable=True),
+        sa.Column('tokens', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column('generated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('digest_date')
+    )
+    op.create_index('idx_digest_date', 'daily_digest', ['digest_date'], unique=False, postgresql_ops={'digest_date': 'DESC'})
+    op.create_index(op.f('ix_daily_digest_id'), 'daily_digest', ['id'], unique=False)
+
+    # Create trend_clusters table
+    op.create_table(
+        'trend_clusters',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('trend_name', sa.String(length=200), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('example_tracks', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column('strength_score', sa.Float(), nullable=True),
+        sa.Column('category', sa.String(length=100), nullable=True),
+        sa.Column('detected_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('idx_detected_at', 'trend_clusters', ['detected_at'], unique=False, postgresql_ops={'detected_at': 'DESC'})
+    op.create_index(op.f('ix_trend_clusters_id'), 'trend_clusters', ['id'], unique=False)
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    op.drop_index(op.f('ix_trend_clusters_id'), table_name='trend_clusters')
+    op.drop_index('idx_detected_at', table_name='trend_clusters')
+    op.drop_table('trend_clusters')
+    
+    op.drop_index(op.f('ix_daily_digest_id'), table_name='daily_digest')
+    op.drop_index('idx_digest_date', table_name='daily_digest')
+    op.drop_table('daily_digest')
+    
+    op.drop_index(op.f('ix_gear_releases_id'), table_name='gear_releases')
+    op.drop_table('gear_releases')
+    
+    op.drop_index(op.f('ix_new_releases_id'), table_name='new_releases')
+    op.drop_index('idx_release_date', table_name='new_releases')
+    op.drop_index('idx_notable', table_name='new_releases')
+    op.drop_table('new_releases')
+    
+    op.drop_index(op.f('ix_chart_snapshots_id'), table_name='chart_snapshots')
+    op.drop_index('idx_platform_date', table_name='chart_snapshots')
+    op.drop_table('chart_snapshots')
+    
+    op.drop_index(op.f('ix_industry_news_id'), table_name='industry_news')
+    op.drop_index('idx_source_published', table_name='industry_news')
+    op.drop_index('idx_category_published', table_name='industry_news')
+    op.drop_table('industry_news')

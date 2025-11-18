@@ -1,0 +1,36 @@
+/home/dwood/tunescore/logs/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    missingok
+    create 0644 dwood dwood
+    sharedscripts
+    postrotate
+        # Reload backend if running
+        systemctl is-active tunescore-backend && systemctl reload tunescore-backend || true
+    endscript
+}
+
+/home/dwood/tunescore/logs/backup.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    notifempty
+    missingok
+    create 0644 dwood dwood
+}
+
+/home/dwood/tunescore/logs/api_prompts.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    missingok
+    create 0644 dwood dwood
+    size 100M
+}
+

@@ -1,0 +1,16 @@
+[Unit]
+Description=TuneScore Database Backup
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=dwood
+Group=dwood
+ExecStart=/home/dwood/tunescore/scripts/backup_db.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

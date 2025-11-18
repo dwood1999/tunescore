@@ -1,0 +1,14 @@
+[Unit]
+Description=TuneScore Jobs Timer
+Requires=tunescore-jobs.service
+
+[Timer]
+# Run daily at 6:00 AM for artist snapshots
+OnCalendar=*-*-* 06:00:00
+# Run every 4 hours for viral detection
+OnCalendar=*-*-* 00,04,08,12,16,20:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+
