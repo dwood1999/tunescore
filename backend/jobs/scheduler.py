@@ -11,6 +11,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from artist_snapshots import collect_all_artist_snapshots
+from industry_pulse import run_industry_pulse_job
 from viral_detection import detect_viral_signals
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,16 @@ def setup_scheduler() -> AsyncIOScheduler:
         replace_existing=True,
     )
     logger.info("Scheduled: Artist snapshots (daily at 6:00 AM)")
+
+    # Industry Pulse - every 4 hours
+    scheduler.add_job(
+        run_industry_pulse_job,
+        trigger=CronTrigger(hour="*/4"),
+        id="industry_pulse",
+        name="Industry Pulse data collection (every 4 hours)",
+        replace_existing=True,
+    )
+    logger.info("Scheduled: Industry Pulse (every 4 hours)")
 
     # Viral detection - every 4 hours
     scheduler.add_job(

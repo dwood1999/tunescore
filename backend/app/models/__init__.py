@@ -1,5 +1,13 @@
 """Database models."""
 
+from ..industry_snapshot.models import (
+    ChartSnapshot,
+    DailyDigest,
+    GearRelease,
+    IndustryNews,
+    NewRelease,
+    TrendCluster,
+)
 from .track import (
     Analysis,
     Artist,
@@ -32,4 +40,10 @@ __all__ = [
     "TrackTags",
     "PitchCopy",
     "WaitlistEntry",
+    "ChartSnapshot",
+    "DailyDigest",
+    "GearRelease",
+    "IndustryNews",
+    "NewRelease",
+    "TrendCluster",
 ]

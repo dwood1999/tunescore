@@ -4,11 +4,11 @@ import logging
 from datetime import date, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.database import get_db
+from ..core.database import AsyncSessionLocal, get_db
 from ..schemas.industry_snapshot import (
     ChartMoversSchema,
     ChartSnapshotSchema,
@@ -17,6 +17,7 @@ from ..schemas.industry_snapshot import (
     NewReleaseSchema,
 )
 from .models import ChartSnapshot, DailyDigest, IndustryNews, NewRelease
+from .scraper import run_scraping_job
 
 logger = logging.getLogger(__name__)
 
@@ -248,4 +249,22 @@ async def get_new_releases(
 async def get_gear_releases() -> list:
     """Get new gear/software releases (Phase 2 - stub for now)."""
     return []
+
+
+@router.post("/refresh")
+async def refresh_data(background_tasks: BackgroundTasks) -> dict[str, str]:
+    """Trigger manual data refresh."""
+    background_tasks.add_task(_run_refresh_job)
+    return {"status": "started", "message": "Data refresh started in background"}
+
+
+async def _run_refresh_job():
+    """Background job to run scraper."""
+    logger.info("Starting manual data refresh...")
+    async with AsyncSessionLocal() as db:
+        try:
+            await run_scraping_job(db)
+            logger.info("Manual data refresh completed")
+        except Exception as e:
+            logger.error(f"Manual data refresh failed: {e}")
 

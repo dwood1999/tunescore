@@ -6,6 +6,12 @@
 		{ key: 'developer', label: 'A&R', icon: '🔍', color: 'green' },
 		{ key: 'monetizer', label: 'Execs', icon: '💼', color: 'purple' }
 	];
+	
+	// Convert markdown-style links [text](url) to HTML
+	function renderLinks(text: string): string {
+		// Match [text](url) pattern
+		return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-200 transition-colors">$1</a>');
+	}
 </script>
 
 <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-8 mb-8 text-white">
@@ -21,9 +27,9 @@
 		</span>
 	</div>
 
-	<p class="text-lg mb-6 leading-relaxed opacity-95">
-		{digest.summary_text}
-	</p>
+	<div class="text-lg mb-6 leading-relaxed opacity-95">
+		{@html renderLinks(digest.summary_text)}
+	</div>
 
 	{#if digest.key_highlights}
 		<div class="grid md:grid-cols-3 gap-4">
@@ -38,7 +44,7 @@
 							{#each digest.key_highlights[tier.key] as highlight}
 								<li class="flex items-start">
 									<span class="mr-2">•</span>
-									<span class="opacity-90">{highlight}</span>
+									<span class="opacity-90">{@html renderLinks(highlight)}</span>
 								</li>
 							{/each}
 						</ul>

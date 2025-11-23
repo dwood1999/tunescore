@@ -1,76 +1,85 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import DailyDigest from './components/DailyDigest.svelte';
 	import ChartsSection from './components/ChartsSection.svelte';
 	import NewsSection from './components/NewsSection.svelte';
 	import ReleasesSection from './components/ReleasesSection.svelte';
+	import OpportunitiesSection from './components/OpportunitiesSection.svelte';
 	
 	let { data } = $props();
-	let activeTab = $state('charts');
 	
-	const tabs = [
-		{ id: 'charts', label: 'Charts', icon: '🔥' },
-		{ id: 'news', label: 'News', icon: '📰' },
-		{ id: 'releases', label: 'Releases', icon: '🎵' }
-	];
+	function formatLastUpdated(): string {
+		return new Date().toLocaleTimeString('en-US', {
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		});
+	}
 </script>
 
 <svelte:head>
 	<title>Industry Pulse - TuneScore</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
-	<div class="container mx-auto px-4 py-8 max-w-7xl">
+<div class="min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white">
+	<div class="container mx-auto px-4 py-8 max-w-[1600px]">
 		<!-- Header -->
-		<div class="mb-8">
-			<h1 class="text-4xl font-bold text-gray-900 mb-2">
-				Industry Pulse
-			</h1>
-			<p class="text-lg text-gray-600">
-				Real-time music industry intelligence - Bloomberg Terminal for Music
-			</p>
-		</div>
+		<header class="mb-8 text-center">
+			<div class="max-w-4xl mx-auto">
+				<h1 class="text-4xl lg:text-5xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+					📊 Industry Pulse
+				</h1>
+				<p class="text-lg lg:text-xl text-gray-400 mb-4">
+					Real-time music industry intelligence
+				</p>
 
-		<!-- Daily Digest -->
-		{#if data.digest}
-			<DailyDigest digest={data.digest} />
-		{/if}
+				<div class="flex items-center justify-center gap-4 text-sm text-gray-500">
+					<span>Updated: {formatLastUpdated()}</span>
+				</div>
+			</div>
+		</header>
 
-		<!-- Tab Navigation -->
-		<div class="bg-white rounded-lg shadow-sm mb-6 p-2">
-			<nav class="flex space-x-2" aria-label="Industry Pulse Sections">
-				{#each tabs as tab}
-					<button
-						onclick={() => activeTab = tab.id}
-						class="flex-1 px-6 py-3 text-sm font-medium rounded-md transition-colors
-							{activeTab === tab.id
-								? 'bg-blue-600 text-white shadow-sm'
-								: 'text-gray-700 hover:bg-gray-100'}"
-					>
-						<span class="mr-2">{tab.icon}</span>
-						{tab.label}
-					</button>
-				{/each}
-			</nav>
-		</div>
-
-		<!-- Tab Content -->
-		<div class="transition-all duration-300">
-			{#if activeTab === 'charts'}
-				<ChartsSection charts={data.charts} />
-			{:else if activeTab === 'news'}
-				<NewsSection news={data.news} />
-			{:else if activeTab === 'releases'}
-				<ReleasesSection releases={data.releases} />
+		<!-- Main Dashboard Grid -->
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6" in:fade>
+			
+			<!-- Executive Summary (Full Width) -->
+			{#if data.digest}
+				<div class="col-span-1 lg:col-span-3">
+					<DailyDigest digest={data.digest} />
+				</div>
 			{/if}
+
+			<!-- Indie Opportunities (Full Width) -->
+			{#if data.digest?.extra_data}
+				<div class="col-span-1 lg:col-span-3">
+					<OpportunitiesSection 
+						opportunities={data.digest.extra_data.opportunities || []} 
+						takeaway={data.digest.extra_data.indie_takeaway || ""} 
+					/>
+				</div>
+			{/if}
+
+			<!-- Charts (Left Column) -->
+			<div class="col-span-1 h-full">
+				<ChartsSection charts={data.charts} />
+			</div>
+
+			<!-- News (Right Column - Spans 2) -->
+			<div class="col-span-1 lg:col-span-2 h-full">
+				<NewsSection news={data.news} />
+			</div>
+
+			<!-- Releases (Full Width) -->
+			<div class="col-span-1 lg:col-span-3 mt-6">
+				<ReleasesSection releases={data.releases} />
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
-	/* Add smooth transitions */
 	:global(body) {
-		transition: background-color 0.3s ease;
+		background-color: #030712; /* gray-950 */
 	}
 </style>
-

@@ -338,7 +338,7 @@ class IndustryDigestAI:
         """Build prompt for daily digest generation."""
         news_summary = "\n".join(
             [
-                f"- [{item.get('source')}] {item.get('title')}"
+                f"- [{item.get('source')}] {item.get('title')} (URL: {item.get('url', 'N/A')})"
                 for item in news_items[:10]
             ]
         )
@@ -346,7 +346,7 @@ class IndustryDigestAI:
             [f"- {r.get('artist')} - {r.get('album_title')}" for r in releases[:10]]
         )
 
-        return f"""You are a music industry analyst. Generate a concise daily digest for TuneScore (Bloomberg Terminal for Music).
+        return f"""You are a music industry analyst specializing in insights for SELF-PUBLISHING INDEPENDENT ARTISTS. Generate an actionable daily digest for TuneScore (Bloomberg Terminal for Music).
 
 **Today's News ({len(news_items)} articles):**
 {news_summary}
@@ -358,13 +358,25 @@ class IndustryDigestAI:
 {json.dumps(chart_data, indent=2) if chart_data else 'No chart data available'}
 
 Generate a JSON response with:
-1. "summary_text": 2-3 sentence executive summary of the day's key stories
-2. "key_highlights": Object with arrays for each tier:
-   - "creator": [3-5 highlights for artists/producers - focus on trends, tools, viral opportunities]
-   - "developer": [3-5 highlights for A&R - focus on breakout artists, market shifts, signing opportunities]
-   - "monetizer": [3-5 highlights for execs - focus on M&A, valuations, market size, platform changes]
+1. "summary_text": 2-3 sentence executive summary with SPECIFIC REFERENCES to news sources (cite article titles or companies mentioned). Make it actionable for indie artists.
 
-Keep it punchy, actionable, and industry-savvy. Use real artist/company names from the data.
+2. "key_highlights": Object with arrays for each tier:
+   - "creator": [4-6 SPECIFIC, ACTIONABLE highlights for SELF-PUBLISHING/INDIE ARTISTS]
+     * Focus on: Viral marketing tactics (TikTok/Reels trends), new DIY tools, royalty/payment news, sync opportunities, distribution updates
+     * Include SPECIFIC artist names, tools, or platforms mentioned in the news
+     * Frame as "what you can do" not just "what happened"
+   
+   - "developer": [3-5 highlights for A&R - breakout artists, market shifts, signing opportunities]
+   
+   - "monetizer": [3-5 highlights for execs - M&A, valuations, market size, platform changes]
+
+3. "opportunities": Array of 2-4 CONCRETE action items for indie artists today:
+   - Each should be: {{"title": "...", "description": "...", "category": "sync|grant|tool|marketing"}}
+   - Examples: "Submit to Spotify Editorial Playlists", "TikTok Sound Trending: [Genre]", "New Sync Brief: [Description]"
+
+4. "indie_takeaway": ONE sentence action item for indie artists based on today's news (e.g., "Capitalize on [trend] by [action]")
+
+Keep it punchy, actionable, and industry-savvy. Use real artist/company names from the data. CITE sources when possible.
 
 Respond ONLY with valid JSON matching this structure:
 {{
@@ -373,7 +385,11 @@ Respond ONLY with valid JSON matching this structure:
     "creator": ["...", "...", "..."],
     "developer": ["...", "...", "..."],
     "monetizer": ["...", "...", "..."]
-  }}
+  }},
+  "opportunities": [
+    {{"title": "...", "description": "...", "category": "..."}}
+  ],
+  "indie_takeaway": "..."
 }}"""
 
     def _build_summary_prompt(self, title: str, content: str, source: str) -> str:
@@ -412,6 +428,8 @@ Respond ONLY with valid JSON:
             return {
                 "summary_text": data.get("summary_text", ""),
                 "key_highlights": data.get("key_highlights", {}),
+                "opportunities": data.get("opportunities", []),
+                "indie_takeaway": data.get("indie_takeaway", ""),
             }
         except (json.JSONDecodeError, IndexError) as e:
             logger.error(f"Failed to parse digest response: {e}")

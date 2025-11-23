@@ -77,11 +77,14 @@
 </script>
 
 <div class="space-y-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
+  <!-- Workspace Header -->
+  <div class="flex items-start justify-between mb-2">
     <div>
-      <h1 class="text-3xl font-bold mb-2">Dashboard</h1>
-      <p class="text-muted-foreground">View and manage your tracks</p>
+      <div class="flex items-center gap-2 mb-2">
+        <Badge variant="secondary" class="text-xs uppercase tracking-wide">Creator Workspace</Badge>
+      </div>
+      <h1 class="text-3xl font-bold mb-2">My Tracks</h1>
+      <p class="text-muted-foreground">View, analyze, and optimize your music catalog</p>
     </div>
     <Button href="/upload" size="lg">
       <Upload class="w-4 h-4 mr-2" />
@@ -166,6 +169,31 @@
           </div>
           <div class="text-sm text-muted-foreground">Excellent (80+)</div>
         </div>
+      </div>
+    </Card>
+
+    <!-- What's Next - Quick Actions -->
+    <Card class="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+      <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        <Sparkles class="w-5 h-5 text-purple-600" />
+        What's Next?
+      </h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <a href="/hook-lab" class="p-4 bg-white rounded-lg hover:shadow-md transition-all border border-purple-100 hover:border-purple-300 group">
+          <Zap class="w-6 h-6 text-purple-600 mb-2" />
+          <div class="font-medium mb-1 group-hover:text-purple-600">Analyze Your Hooks</div>
+          <div class="text-sm text-gray-600">Find your most viral moments</div>
+        </a>
+        <a href="/riyl-discovery" class="p-4 bg-white rounded-lg hover:shadow-md transition-all border border-purple-100 hover:border-purple-300 group">
+          <Target class="w-6 h-6 text-blue-600 mb-2" />
+          <div class="font-medium mb-1 group-hover:text-blue-600">Discover Your Audience</div>
+          <div class="text-sm text-gray-600">Find similar artists and target listeners</div>
+        </a>
+        <a href="/audience-dna" class="p-4 bg-white rounded-lg hover:shadow-md transition-all border border-purple-100 hover:border-purple-300 group">
+          <Heart class="w-6 h-6 text-pink-600 mb-2" />
+          <div class="font-medium mb-1 group-hover:text-pink-600">View Audience DNA</div>
+          <div class="text-sm text-gray-600">Demographics and geography insights</div>
+        </a>
       </div>
     </Card>
 

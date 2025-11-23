@@ -132,6 +132,7 @@ class DailyDigest(Base):
     key_highlights = Column(
         JSONB
     )  # {creator: [...], developer: [...], monetizer: [...]}
+    extra_data = Column(JSONB)  # {opportunities: [...], indie_takeaway: "..."}
     cost = Column(Float)  # AI generation cost
     tokens = Column(JSONB)  # {input: X, output: Y, total: Z}
     generated_at = Column(DateTime(timezone=True), server_default=func.now())

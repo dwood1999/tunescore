@@ -213,3 +213,25 @@ alembic/versions/*.py
 # Frontend generated types
 frontend/src/lib/api/types.ts
 frontend/src/lib/api/schemas.ts
+
+# Database backups
+backups/*.sql.gz
+backups/monthly/
+backups/weekly/
+*.sql.gz
+
+# AI/Claude history
+.claude/
+
+# Temporary scripts and debug files
+restore_database.sh
+backend/debug_scraper.py
+
+# Status/progress documentation (not needed in repo)
+AI_CHAT_CONTEXT.md
+DOCKER_COMPLETE.md
+DOCKER_MIGRATION_GUIDE.md
+ISOLATION_VERIFICATION.md
+MUSIC_QUILTY_APP_SETUP_COMPLETE.md
+START_HERE_DOCKER.md
+TUNESCORE_UX_REDESIGN_COMPLETE.md

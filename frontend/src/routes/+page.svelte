@@ -10,16 +10,25 @@
       id: 'creator',
       title: 'Creator Workspace',
       description: 'Sonic & Lyrical Genome, RIYL recommendations, Hook Lab analysis for artists.',
+      features: ['Hook Lab', 'RIYL Discovery', 'Audience DNA', 'Upload & Analyze'],
+      href: '/dashboard',
+      color: 'from-blue-500 to-purple-500'
     },
     {
       id: 'developer',
       title: 'Developer (A&R) Hub',
       description: 'Talent Discovery, Breakout Score, Collaboration Lab for A&R managers.',
+      features: ['Talent Discovery', 'Breakout Scores', 'Artist Comparison', 'Trend Analysis'],
+      href: '/talent-discovery',
+      color: 'from-purple-500 to-pink-500'
     },
     {
       id: 'monetizer',
       title: 'Monetizer Intelligence',
       description: 'Catalog Valuation, Global Resonance, Sync Licensing for executives.',
+      features: ['Catalog Valuation', 'Global Resonance', 'Sync Licensing', 'ROI Tracking'],
+      href: '/catalog',
+      color: 'from-emerald-500 to-teal-500'
     },
   ];
 </script>
@@ -87,16 +96,25 @@
           data, and streaming insights — returning a single source of truth for music industry decisions.
         </p>
 
-        <div class="grid gap-3 sm:grid-cols-3 mb-8">
+        <div class="grid gap-4 sm:grid-cols-3 mb-8">
           {#each workspaces as workspace (workspace.id)}
-            <div
-              class="bg-white/10 border border-white/10 rounded-xl p-4 text-sm text-gray-100 flex flex-col gap-2"
+            <a
+              href={workspace.href}
+              class="bg-white/10 border border-white/10 hover:border-sage/50 rounded-xl p-5 text-sm text-gray-100 flex flex-col gap-3 transition-all hover:bg-white/15 hover:scale-105 group"
             >
-              <span class="bg-sage/20 text-sage px-3 py-1 rounded-full text-xs font-semibold w-fit"
+              <span class="bg-sage/20 text-sage px-3 py-1 rounded-full text-xs font-semibold w-fit group-hover:bg-sage/30"
                 >{workspace.title}</span
               >
-              <span>{workspace.description}</span>
-            </div>
+              <span class="text-white/90">{workspace.description}</span>
+              <div class="mt-2 flex flex-wrap gap-1">
+                {#each workspace.features.slice(0, 2) as feature}
+                  <span class="text-xs text-white/60 bg-white/5 px-2 py-1 rounded">• {feature}</span>
+                {/each}
+              </div>
+              <span class="text-sage text-xs font-semibold mt-auto group-hover:underline">
+                Explore →
+              </span>
+            </a>
           {/each}
         </div>
 

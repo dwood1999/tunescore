@@ -1,0 +1,152 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database with extensions
+  postgres:
+    image: postgres:16-alpine
+    container_name: tunescore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tunescore
+      POSTGRES_USER: ${POSTGRES_USER:-tunescore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d
+    ports:
+      - "127.0.0.1:5433:5432"  # Use different port to avoid conflict with quilty.app
+    networks:
+      - tunescore-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tunescore}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+      -c shared_preload_libraries='pg_stat_statements'
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+  # Redis for caching (optional but recommended)
+  redis:
+    image: redis:7-alpine
+    container_name: tunescore-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6380:6379"  # Use different port to avoid conflict
+    networks:
+      - tunescore-network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tunescore-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-tunescore}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/tunescore
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-tunescore}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/tunescore
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      
+      # API Settings
+      API_V1_PREFIX: /api/v1
+      PROJECT_NAME: TuneScore
+      ENVIRONMENT: production
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      
+      # CORS
+      BACKEND_CORS_ORIGINS: '["http://localhost:5128","https://music.quilty.app"]'
+      
+      # External APIs (optional)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:-}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      
+      # Logging
+      LOG_LEVEL: INFO
+      
+    volumes:
+      - ./backend/files:/app/files
+      - ./backend/logs:/app/logs
+      - ./backend/alembic:/app/alembic
+    ports:
+      - "127.0.0.1:8001:8001"  # Only expose on localhost
+    networks:
+      - tunescore-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/api/v1/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tunescore-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:5128:5128"  # Only expose on localhost
+    networks:
+      - tunescore-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5128/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tunescore-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16  # Different subnet to avoid conflicts
+
